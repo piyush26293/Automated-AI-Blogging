@@ -158,13 +158,42 @@ const mediaController = {
     try {
       const { id } = req.params;
 
-      const result = await db.query('DELETE FROM media WHERE id = $1 RETURNING *', [id]);
+      const result = await db.query('SELECT * FROM media WHERE id = $1', [id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Media not found' });
       }
 
-      // TODO: Delete from Cloudinary or local storage
+      const media = result.rows[0];
+
+      // Delete from database
+      await db.query('DELETE FROM media WHERE id = $1', [id]);
+
+      // Delete from storage
+      if (media.url.includes('cloudinary.com')) {
+        // Extract public_id from Cloudinary URL and delete
+        try {
+          const urlParts = media.url.split('/');
+          const filename = urlParts[urlParts.length - 1].split('.')[0];
+          const folder = 'ai-blog';
+          const publicId = `${folder}/${filename}`;
+          
+          if (process.env.CLOUDINARY_CLOUD_NAME) {
+            await cloudinary.uploader.destroy(publicId, { resource_type: media.type });
+          }
+        } catch (cloudinaryError) {
+          console.error('Error deleting from Cloudinary:', cloudinaryError);
+        }
+      } else {
+        // Delete from local storage
+        try {
+          const filename = media.url.split('/').pop();
+          const filepath = path.join(__dirname, '../../uploads', filename);
+          await fs.unlink(filepath);
+        } catch (fsError) {
+          console.error('Error deleting local file:', fsError);
+        }
+      }
 
       res.json({ message: 'Media deleted successfully' });
     } catch (error) {

@@ -44,8 +44,25 @@ const postController = {
 
       const result = await db.query(query, params);
 
-      const countQuery = await db.query('SELECT COUNT(*) FROM posts WHERE 1=1');
-      const total = parseInt(countQuery.rows[0].count);
+      // Build count query with same conditions
+      let countQuery = 'SELECT COUNT(*) FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE 1=1';
+      const countParams = [];
+      let countParamCount = 1;
+
+      if (status) {
+        countQuery += ` AND p.status = $${countParamCount}`;
+        countParams.push(status);
+        countParamCount++;
+      }
+
+      if (category) {
+        countQuery += ` AND c.slug = $${countParamCount}`;
+        countParams.push(category);
+        countParamCount++;
+      }
+
+      const countResult = await db.query(countQuery, countParams);
+      const total = parseInt(countResult.rows[0].count);
 
       const response = {
         posts: result.rows,
