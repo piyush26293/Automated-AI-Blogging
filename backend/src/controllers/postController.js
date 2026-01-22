@@ -221,6 +221,12 @@ const postController = {
       const queueId = queueResult.rows[0].id;
 
       // Start generation (async)
+      // Note: This uses setImmediate for simplicity. In production, consider using
+      // a proper job queue system like Bull/BullMQ with Redis for:
+      // - Reliable background processing
+      // - Better error handling and retries
+      // - Job persistence and monitoring
+      // - Horizontal scaling support
       setImmediate(async () => {
         try {
           await db.query('UPDATE generation_queue SET started_at = $1 WHERE id = $2', [new Date(), queueId]);

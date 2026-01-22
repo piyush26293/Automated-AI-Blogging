@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Post } from '@/types'
+import { Post, Category } from '@/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -21,7 +21,7 @@ async function getPosts(): Promise<Post[]> {
   }
 }
 
-async function getCategories() {
+async function getCategories(): Promise<Category[]> {
   try {
     const res = await fetch(`${API_URL}/api/categories`, {
       next: { revalidate: 300 }, // ISR: revalidate every 5 minutes
@@ -61,7 +61,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h2 className="text-2xl font-bold mb-6">Categories</h2>
           <div className="flex flex-wrap gap-3">
-            {categories.map((category: any) => (
+            {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/?category=${category.slug}`}

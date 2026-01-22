@@ -91,11 +91,24 @@ class AIService {
     const prompt = prompts.generateTopicSuggestions(category);
     const response = await this.generateText(prompt, 0.9);
     
-    // Parse the numbered list
-    const topics = response
+    // Parse the numbered list with fallback handling
+    let topics = response
       .split('\n')
       .filter(line => line.trim().match(/^\d+\./))
       .map(line => line.replace(/^\d+\.\s*/, '').trim());
+    
+    // Fallback: if no numbered list found, try splitting by newlines
+    if (topics.length === 0) {
+      topics = response
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 10 && line.length < 200);
+    }
+    
+    // Fallback: if still no topics, use the first sentence
+    if (topics.length === 0 && response.length > 0) {
+      topics = [response.split('.')[0].trim()];
+    }
     
     return topics.slice(0, 5);
   }

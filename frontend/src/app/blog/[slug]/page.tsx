@@ -143,6 +143,8 @@ export default async function BlogPost({ params }: { params: { slug: string } })
         </div>
 
         {/* Content */}
+        {/* Note: Content is AI-generated and stored as HTML. In production, consider adding
+            HTML sanitization middleware (e.g., DOMPurify) for additional security. */}
         <div 
           className="prose prose-lg max-w-none mb-12"
           dangerouslySetInnerHTML={{ __html: post.content }}

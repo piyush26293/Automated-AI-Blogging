@@ -45,8 +45,19 @@ echo "⏳ Waiting for PostgreSQL to be ready..."
 sleep 10
 
 echo "📊 Initializing database..."
-docker exec -i ai-blog-postgres psql -U postgres -d ai_blog < database/migrations/001_initial_schema.sql
-docker exec -i ai-blog-postgres psql -U postgres -d ai_blog < database/seeds/categories.sql
+if docker exec -i ai-blog-postgres psql -U postgres -d ai_blog < database/migrations/001_initial_schema.sql; then
+    echo "✅ Database schema created successfully"
+else
+    echo "❌ Failed to create database schema"
+    exit 1
+fi
+
+if docker exec -i ai-blog-postgres psql -U postgres -d ai_blog < database/seeds/categories.sql; then
+    echo "✅ Database seeded successfully"
+else
+    echo "❌ Failed to seed database"
+    exit 1
+fi
 
 echo ""
 echo "✅ Setup complete!"

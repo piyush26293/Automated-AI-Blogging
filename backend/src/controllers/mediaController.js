@@ -5,6 +5,9 @@ const cloudinary = require('cloudinary').v2;
 const db = require('../config/database');
 const imageGeneratorService = require('../services/imageGeneratorService');
 
+// Configuration
+const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || 'ai-blog';
+
 // Configure Cloudinary
 if (process.env.CLOUDINARY_CLOUD_NAME) {
   cloudinary.config({
@@ -61,7 +64,7 @@ const mediaController = {
       // Upload to Cloudinary if configured, otherwise use local
       if (process.env.CLOUDINARY_CLOUD_NAME && process.env.USE_LOCAL_STORAGE !== 'true') {
         const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: 'ai-blog',
+          folder: CLOUDINARY_FOLDER,
           resource_type: type,
         });
         url = result.secure_url;
@@ -107,7 +110,7 @@ const mediaController = {
       // Upload to Cloudinary if configured
       if (process.env.CLOUDINARY_CLOUD_NAME && process.env.USE_LOCAL_STORAGE !== 'true') {
         const result = await cloudinary.uploader.upload(filepath, {
-          folder: 'ai-blog',
+          folder: CLOUDINARY_FOLDER,
           resource_type: 'image',
         });
         url = result.secure_url;
@@ -175,8 +178,7 @@ const mediaController = {
         try {
           const urlParts = media.url.split('/');
           const filename = urlParts[urlParts.length - 1].split('.')[0];
-          const folder = 'ai-blog';
-          const publicId = `${folder}/${filename}`;
+          const publicId = `${CLOUDINARY_FOLDER}/${filename}`;
           
           if (process.env.CLOUDINARY_CLOUD_NAME) {
             await cloudinary.uploader.destroy(publicId, { resource_type: media.type });
